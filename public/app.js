@@ -228,10 +228,14 @@ function projectFilterSummary(savedProject) {
 
 async function loadProjects() {
   const projects = await call("/api/projects");
-  $("resume").innerHTML = projects.map((savedProject) =>
+  $("resume").innerHTML = projects.map((savedProject) => {
+    const currentTargetName = albums.find((album) => album.id === savedProject.target_album_id)?.albumName
+      || savedProject.target_album_name;
+    return (
     `<button data-id="${savedProject.id}"><b>${escapeHtml(projectFilterSummary(savedProject))}</b><br>` +
-    `<small>To ${escapeHtml(savedProject.target_album_name)} · ${savedProject.decided || 0} reviewed · ${savedProject.accepted || 0} added</small></button>`
-  ).join("");
+    `<small>To ${escapeHtml(currentTargetName)} · ${savedProject.decided || 0} reviewed · ${savedProject.accepted || 0} added</small></button>`
+    );
+  }).join("");
   $("resume").querySelectorAll("button").forEach((button) => {
     button.onclick = () => resumeProject(Number(button.dataset.id), projects);
   });
