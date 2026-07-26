@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
+  <base href="/phinder/">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#11110f">
   <title>Phinder</title>
@@ -9,15 +10,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Phinder">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="icon" type="image/png" href="/favicon.png">
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="stylesheet" href="/styles.css">
-  <link rel="stylesheet" href="/filters.css">
-  <link rel="stylesheet" href="/friendly.css">
-  <link rel="stylesheet" href="/rams.css">
-  <script src="/vendor/d3.min.js"></script>
-  <script src="/vendor/topojson-client.min.js"></script>
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./filters.css">
+  <link rel="stylesheet" href="./friendly.css">
+  <link rel="stylesheet" href="./rams.css">
+  <script src="./vendor/d3.min.js"></script>
+  <script src="./vendor/topojson-client.min.js"></script>
 </head>
 <body>
   <header class="topbar">
@@ -110,6 +111,6 @@
   </main>
   <dialog id="albumDialog"><form method="dialog"><button class="close" value="cancel" aria-label="Close">&times;</button><p class="eyebrow">NEW IMMICH ALBUM</p><h3>Name your album</h3><input id="albumName" placeholder="Wedding - final favorites" maxlength="100"><button class="primary" id="createAlbumBtn" value="default">Create album</button></form></dialog>
   <dialog id="cleanupDialog"><form method="dialog"><button class="close" value="cancel" aria-label="Close">&times;</button><p class="eyebrow">RANDOM CLEANUP</p><h3>Review your whole library?</h3><p>Choosing “Move to trash” removes that photo from your Immich timeline. You can undo the latest choice here or restore it later from Immich trash.</p><button class="danger" id="startCleanupBtn" value="default">Start random cleanup</button></form></dialog>
-  <script type="module" src="/app.js"></script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>

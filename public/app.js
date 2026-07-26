@@ -1,4 +1,5 @@
 const $ = (id) => document.getElementById(id);
+const appUrl = (path) => `.${path}`;
 let albums = [];
 let project = null;
 let asset = null;
@@ -34,7 +35,7 @@ const captureRangeWindow = () => {
 };
 
 const call = async (path, init) => {
-  const response = await fetch(path, init);
+  const response = await fetch(appUrl(path), init);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) throw new Error(data.error || `Request failed (${response.status})`);
   return data;
@@ -116,7 +117,7 @@ function renderGeoSelection() {
 
 async function initGeoMap() {
   if (geoReady) return;
-  const world = await fetch("/vendor/countries-110m.json").then((response) => response.json());
+  const world = await fetch(appUrl("/vendor/countries-110m.json")).then((response) => response.json());
   const countries = topojson.feature(world, world.objects.countries);
   geoProjection = d3.geoEquirectangular().fitExtent([[8, 8], [952, 472]], { type: "Sphere" });
   geoPath = d3.geoPath(geoProjection);
@@ -281,7 +282,7 @@ function renderChooserAsset(nextAsset) {
   $("photo").classList.remove("hidden");
   $("meta").classList.remove("hidden");
   $("acceptBtn").disabled = $("rejectBtn").disabled = false;
-  $("photo").src = `/api/assets/${asset.id}/thumbnail`;
+  $("photo").src = appUrl(`/api/assets/${asset.id}/thumbnail`);
   $("photo").alt = asset.originalFileName || "Photo to choose";
   $("filename").textContent = asset.originalFileName || "";
   $("date").textContent = asset.fileCreatedAt
@@ -326,7 +327,7 @@ async function reviewPicks() {
   $("homeBtn").hidden = false;
   const selected = await call(`/api/projects/${project.id}/selected`);
   $("grid").innerHTML = selected.length
-    ? selected.map((item) => `<img loading="lazy" src="/api/assets/${item.asset_id}/thumbnail" alt="Chosen photo">`).join("")
+    ? selected.map((item) => `<img loading="lazy" src="${appUrl(`/api/assets/${item.asset_id}/thumbnail`)}" alt="Chosen photo">`).join("")
     : "<p>You have not added any photos yet.</p>";
 }
 
@@ -354,7 +355,7 @@ function renderCleanupAsset(nextAsset) {
   $("cleanupPhoto").classList.remove("hidden");
   $("cleanupMeta").classList.remove("hidden");
   $("cleanupKeepBtn").disabled = $("cleanupTrashBtn").disabled = false;
-  $("cleanupPhoto").src = `/api/assets/${cleanupAsset.id}/thumbnail`;
+  $("cleanupPhoto").src = appUrl(`/api/assets/${cleanupAsset.id}/thumbnail`);
   $("cleanupPhoto").alt = cleanupAsset.originalFileName || "Random photo";
   $("cleanupFilename").textContent = cleanupAsset.originalFileName || "";
   $("cleanupDate").textContent = cleanupAsset.fileCreatedAt

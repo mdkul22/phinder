@@ -58,4 +58,9 @@ test("map, touch controls, and iOS app icon are wired", async () => {
   assert.match(theme, /select\s*\{\s*border-radius:\s*0/);
   assert.match(theme, /\.photoShell img[\s\S]*object-fit:\s*contain/);
   assert.match(theme, /\.photoShell \.meta[\s\S]*position:\s*static/);
+  assert.doesNotMatch(html.replace('<base href="/phinder/">', ""), /(?:src|href)="\/(?!\/)/);
+  assert.match(script, /const appUrl = \(path\) => `\.\$\{path\}`/);
+  assert.match(html, /<base href="\/phinder\/">/);
+  assert.equal(JSON.parse(manifest).start_url, "./");
+  assert.equal(JSON.parse(manifest).scope, "./");
 });

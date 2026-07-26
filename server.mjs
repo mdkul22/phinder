@@ -564,6 +564,9 @@ async function serve(req, res, pathname) {
 createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
+    if (url.pathname === "/phinder" || url.pathname.startsWith("/phinder/")) {
+      url.pathname = url.pathname.slice("/phinder".length) || "/";
+    }
     if (url.pathname === "/healthz") return json(res, 200, { ok: true });
     if (url.pathname.startsWith("/api/assets/") && url.pathname.endsWith("/thumbnail")) {
       const id = url.pathname.split("/")[3];

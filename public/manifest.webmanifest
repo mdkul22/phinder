@@ -2,18 +2,19 @@
   "name": "Phinder",
   "short_name": "Phinder",
   "description": "Choose your favorite Immich photos privately.",
-  "start_url": "/",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#11110f",
   "theme_color": "#11110f",
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "./icon-192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icon-512.png",
+      "src": "./icon-512.png",
       "sizes": "512x512",
       "type": "image/png"
     }
