@@ -166,31 +166,75 @@ const distanceKm = (latitudeA, longitudeA, latitudeB, longitudeB) => {
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-async function populateGeographyCandidates(projectId, latitude, longitude, radiusKm) {
+async function populateGeographyCandidates(project) {
   let page = 1;
   const insert = db.prepare("INSERT OR IGNORE INTO project_candidates(project_id,asset_id,file_created_at) VALUES(?,?,?)");
+  let albumIds = null;
+  if (project.source_type === "album") {
+    const albumResponse = await immich(`/albums/${project.source_album_id}?withoutAssets=false`);
+    const album = await albumResponse.json();
+    albumIds = new Set((album.assets || []).map((asset) => asset.id));
+  }
   for (let batch = 0; batch < 1000; batch += 1) {
     const response = await immich("/search/metadata", {
       method: "POST",
-      body: JSON.stringify({ page, size: 100, type: "IMAGE", withExif: true, order: "asc" }),
+      body: JSON.stringify({
+        page,
+        size: 100,
+        type: "IMAGE",
+        withExif: true,
+        order: "asc",
+        ...(project.source_type === "favorites" ? { isFavorite: true } : {}),
+        ...(project.source_type === "uploaded_today" ? {
+          createdAfter: project.source_after,
+          createdBefore: project.source_before,
+        } : {}),
+        ...(project.source_type !== "uploaded_today" && project.source_after ? {
+          takenAfter: project.source_after,
+          takenBefore: project.source_before,
+        } : {}),
+        ...(project.source_type === "pune_wedding" ? {
+          takenAfter: "2025-12-12T18:30:00.000Z",
+          takenBefore: "2025-12-13T18:30:00.000Z",
+          city: "Pune",
+        } : {}),
+      }),
     });
     const result = await response.json();
     const matches = (result.assets?.items || []).filter((asset) => {
       const exif = asset.exifInfo || {};
-      return Number.isFinite(exif.latitude) && Number.isFinite(exif.longitude)
-        && distanceKm(exif.latitude, exif.longitude, latitude, longitude) <= radiusKm;
+      return (!albumIds || albumIds.has(asset.id))
+        && Number.isFinite(exif.latitude) && Number.isFinite(exif.longitude)
+        && distanceKm(exif.latitude, exif.longitude, project.source_latitude, project.source_longitude) <= project.source_radius_km;
     });
-    for (const asset of matches) insert.run(projectId, asset.id, asset.fileCreatedAt || null);
+    for (const asset of matches) insert.run(project.id, asset.id, asset.fileCreatedAt || null);
     if (!result.assets?.nextPage) break;
     page = Number(result.assets.nextPage);
   }
 }
 
 async function sourceAssets(project, page, decided = new Set()) {
+  if (Number.isFinite(project.source_latitude) && Number.isFinite(project.source_longitude)) {
+    const order = project.shuffle ? "RANDOM()" : "c.file_created_at DESC";
+    const candidate = db.prepare(`
+      SELECT c.asset_id FROM project_candidates c
+      LEFT JOIN decisions d ON d.project_id=c.project_id AND d.asset_id=c.asset_id
+      WHERE c.project_id=? AND d.asset_id IS NULL
+      ORDER BY ${order} LIMIT 1
+    `).get(project.id);
+    if (!candidate) return { items: [], nextPage: null };
+    const assetResponse = await immich(`/assets/${candidate.asset_id}`);
+    return { items: [await assetResponse.json()], nextPage: null };
+  }
   if (project.source_type === "album") {
     const response = await immich(`/albums/${project.source_album_id}?withoutAssets=false`);
     const album = await response.json();
-    const items = (album.assets || []).filter((asset) => asset.type === "IMAGE");
+    const items = (album.assets || []).filter((asset) => {
+      if (asset.type !== "IMAGE") return false;
+      if (!project.source_after || !project.source_before) return true;
+      const captured = new Date(asset.fileCreatedAt);
+      return captured >= new Date(project.source_after) && captured < new Date(project.source_before);
+    });
     if (project.shuffle) items.sort(() => Math.random() - 0.5);
     return { items, nextPage: null };
   }
@@ -219,18 +263,6 @@ async function sourceAssets(project, page, decided = new Set()) {
     if (project.shuffle) items.sort(() => Math.random() - 0.5);
     return { items, nextPage: null };
   }
-  if (project.source_type === "geography") {
-    const order = project.shuffle ? "RANDOM()" : "c.file_created_at DESC";
-    const candidate = db.prepare(`
-      SELECT c.asset_id FROM project_candidates c
-      LEFT JOIN decisions d ON d.project_id=c.project_id AND d.asset_id=c.asset_id
-      WHERE c.project_id=? AND d.asset_id IS NULL
-      ORDER BY ${order} LIMIT 1
-    `).get(project.id);
-    if (!candidate) return { items: [], nextPage: null };
-    const assetResponse = await immich(`/assets/${candidate.asset_id}`);
-    return { items: [await assetResponse.json()], nextPage: null };
-  }
   const filters = {
     type: "IMAGE",
     withExif: true,
@@ -239,14 +271,9 @@ async function sourceAssets(project, page, decided = new Set()) {
       createdAfter: project.source_after,
       createdBefore: project.source_before,
     } : {}),
-    ...(project.source_type === "date_range" ? {
+    ...(project.source_type !== "uploaded_today" && project.source_after ? {
       takenAfter: project.source_after,
       takenBefore: project.source_before,
-    } : {}),
-    ...(project.source_type === "geography" ? {
-      ...(project.source_city ? { city: project.source_city } : {}),
-      ...(project.source_state ? { state: project.source_state } : {}),
-      ...(project.source_country ? { country: project.source_country } : {}),
     } : {}),
   };
   if (project.shuffle) {
@@ -351,14 +378,18 @@ async function api(req, res, url) {
     if (body.sourceType === "uploaded_today" && (!body.sourceAfter || !body.sourceBefore)) {
       return json(res, 400, { error: "The local-day time window is required" });
     }
-    if (body.sourceType === "date_range") {
+    if (body.sourceType === "date_range" || (body.sourceType !== "uploaded_today" && (body.sourceAfter || body.sourceBefore))) {
       const after = new Date(body.sourceAfter);
       const before = new Date(body.sourceBefore);
       if (!body.sourceAfter || !body.sourceBefore || Number.isNaN(after.valueOf()) || Number.isNaN(before.valueOf()) || after >= before) {
         return json(res, 400, { error: "Choose a valid capture date range" });
       }
     }
-    if (body.sourceType === "geography") {
+    const hasGeography = body.sourceType === "geography"
+      || body.sourceLatitude !== null && body.sourceLatitude !== undefined
+      || body.sourceLongitude !== null && body.sourceLongitude !== undefined
+      || body.sourceRadiusKm !== null && body.sourceRadiusKm !== undefined;
+    if (hasGeography) {
       const latitude = Number(body.sourceLatitude);
       const longitude = Number(body.sourceLongitude);
       const radius = Number(body.sourceRadiusKm);
@@ -368,9 +399,9 @@ async function api(req, res, url) {
     }
     const result = db.prepare("INSERT INTO projects(name,source_type,source_album_id,source_after,source_before,source_city,source_state,source_country,source_latitude,source_longitude,source_radius_km,shuffle,target_album_id,target_album_name) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
       .run(body.name?.trim() || body.targetAlbumName, body.sourceType, body.sourceAlbumId || null, body.sourceAfter || null, body.sourceBefore || null, body.sourceCity?.trim() || null, body.sourceState?.trim() || null, body.sourceCountry?.trim() || null, body.sourceLatitude ?? null, body.sourceLongitude ?? null, body.sourceRadiusKm ?? null, body.shuffle === false ? 0 : 1, body.targetAlbumId, body.targetAlbumName);
-    if (body.sourceType === "geography") {
+    if (hasGeography) {
       try {
-        await populateGeographyCandidates(result.lastInsertRowid, Number(body.sourceLatitude), Number(body.sourceLongitude), Number(body.sourceRadiusKm));
+        await populateGeographyCandidates(getProject(result.lastInsertRowid));
       } catch (error) {
         db.prepare("DELETE FROM projects WHERE id=?").run(result.lastInsertRowid);
         throw error;

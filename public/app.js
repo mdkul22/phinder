@@ -199,11 +199,38 @@ async function init() {
   await loadProjects();
 }
 
+const shortDate = (value) => value
+  ? new Date(value).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+  : "";
+
+function projectFilterSummary(savedProject) {
+  const scope = {
+    all: "All photos",
+    favorites: "Immich favorites",
+    album: `Album: ${albums.find((album) => album.id === savedProject.source_album_id)?.albumName || "selected album"}`,
+    uploaded_today: "Uploaded today",
+    pune_wedding: "Pune wedding",
+    date_range: "All photos",
+    geography: "All photos",
+  }[savedProject.source_type] || "Photos";
+  const parts = [scope];
+  const hasCaptureDates = savedProject.source_after && savedProject.source_before
+    && savedProject.source_type !== "uploaded_today";
+  if (hasCaptureDates) {
+    const inclusiveEnd = new Date(new Date(savedProject.source_before).valueOf() - 86400000);
+    parts.push(`${shortDate(savedProject.source_after)}–${shortDate(inclusiveEnd)}`);
+  }
+  if (savedProject.source_latitude !== null && savedProject.source_latitude !== undefined) {
+    parts.push(`Near ${Number(savedProject.source_latitude).toFixed(2)}, ${Number(savedProject.source_longitude).toFixed(2)} (${Number(savedProject.source_radius_km).toLocaleString()} km)`);
+  }
+  return parts.join(" · ");
+}
+
 async function loadProjects() {
   const projects = await call("/api/projects");
   $("resume").innerHTML = projects.map((savedProject) =>
-    `<button data-id="${savedProject.id}"><b>Continue ${escapeHtml(savedProject.name)}</b><br>` +
-    `<small>${savedProject.decided || 0} seen - ${savedProject.accepted || 0} added - ${escapeHtml(savedProject.target_album_name)}</small></button>`
+    `<button data-id="${savedProject.id}"><b>${escapeHtml(projectFilterSummary(savedProject))}</b><br>` +
+    `<small>To ${escapeHtml(savedProject.target_album_name)} · ${savedProject.decided || 0} reviewed · ${savedProject.accepted || 0} added</small></button>`
   ).join("");
   $("resume").querySelectorAll("button").forEach((button) => {
     button.onclick = () => resumeProject(Number(button.dataset.id), projects);
@@ -221,7 +248,7 @@ async function openChooser() {
   $("triage").classList.remove("hidden");
   $("homeBtn").hidden = false;
   $("reviewBtn").hidden = false;
-  $("projectTitle").textContent = project.name;
+  $("projectTitle").textContent = projectFilterSummary(project);
   await next();
 }
 
@@ -373,9 +400,15 @@ async function goHome() {
 $("sourceType").onchange = async (event) => {
   const value = event.target.value;
   $("sourceAlbumRow").classList.toggle("hidden", value !== "album");
-  $("dateRangeRow").classList.toggle("hidden", value !== "date_range");
-  $("geographyRow").classList.toggle("hidden", value !== "geography");
-  if (value === "geography") {
+};
+
+$("useDateRange").onchange = (event) => {
+  $("dateRangeRow").classList.toggle("hidden", !event.target.checked);
+};
+
+$("useGeography").onchange = async (event) => {
+  $("geographyRow").classList.toggle("hidden", !event.target.checked);
+  if (event.target.checked) {
     try {
       await initGeoMap();
     } catch {
@@ -405,19 +438,19 @@ $("beginBtn").onclick = async () => {
     const sourceType = $("sourceType").value;
     const window = sourceType === "uploaded_today"
       ? todayWindow()
-      : sourceType === "date_range" ? captureRangeWindow() : {};
-    if (sourceType === "geography" && geoState.latitude === null) {
+      : $("useDateRange").checked ? captureRangeWindow() : {};
+    if ($("useGeography").checked && geoState.latitude === null) {
       throw new Error("Tap or click a place on the map first.");
     }
     button.disabled = true;
-    button.firstChild.textContent = sourceType === "geography" ? "Finding photos in this area " : "Opening your photos ";
+    button.firstChild.textContent = $("useGeography").checked ? "Finding photos in this area " : "Opening your photos ";
     project = await post("/api/projects", {
       sourceType,
       sourceAlbumId: $("sourceAlbum").value,
       ...window,
-      sourceLatitude: geoState.latitude,
-      sourceLongitude: geoState.longitude,
-      sourceRadiusKm: geoState.radiusKm,
+      sourceLatitude: $("useGeography").checked ? geoState.latitude : null,
+      sourceLongitude: $("useGeography").checked ? geoState.longitude : null,
+      sourceRadiusKm: $("useGeography").checked ? geoState.radiusKm : null,
       shuffle: $("sourceOrder").value === "shuffle",
       targetAlbumId: target?.id,
       targetAlbumName: target?.albumName,

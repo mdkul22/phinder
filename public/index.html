@@ -32,16 +32,18 @@
       <p class="lede">Choose which photos to see, then make one simple choice at a time. Your originals always stay safe in Immich.</p>
       <div class="panel">
         <div class="step"><span>01</span><div><b>Immich connection</b><small id="connectionCopy">Securely connected on this server.</small></div></div>
-        <div class="step"><span>02</span><label><b>Which photos?</b><select id="sourceType">
-          <option value="uploaded_today">Uploaded today</option>
-          <option value="pune_wedding">Pune wedding - Dec 13</option>
-          <option value="date_range">Choose capture dates</option>
-          <option value="geography">Choose a place on the map</option>
+        <div class="step"><span>02</span><label><b>Filters</b><small>Start with a group, then optionally narrow it by date or place.</small><select id="sourceType">
           <option value="all">All photos</option>
           <option value="favorites">Immich favorites</option>
           <option value="album">Photos from an album</option>
+          <option value="uploaded_today">Uploaded today</option>
+          <option value="pune_wedding">Pune wedding - Dec 13</option>
         </select></label></div>
         <div class="step hidden" id="sourceAlbumRow"><span></span><label><b>Album to browse</b><select id="sourceAlbum"></select></label></div>
+        <div class="optionalFilters">
+          <label class="filterToggle"><input id="useDateRange" type="checkbox"><span><b>Capture-date range</b><small>Only photos taken between two dates</small></span></label>
+          <label class="filterToggle"><input id="useGeography" type="checkbox"><span><b>Geographic area</b><small>Only photos taken near a place</small></span></label>
+        </div>
         <div class="step hidden" id="dateRangeRow"><span></span><div class="filterGrid two"><label><b>From</b><input id="rangeStart" type="date"></label><label><b>Through</b><input id="rangeEnd" type="date"></label></div></div>
         <div class="mapStep hidden" id="geographyRow">
           <div class="mapIntro"><div><b>Choose an area</b><small>Tap or click a place. Scroll, pinch, or use the buttons to change the radius.</small></div><strong id="geoSelection">No place selected</strong></div>
