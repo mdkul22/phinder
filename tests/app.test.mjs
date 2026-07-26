@@ -35,10 +35,11 @@ test("cleanup is random, recoverable, and keeps the API key server-side", async 
 });
 
 test("map, touch controls, and iOS app icon are wired", async () => {
-  const [html, script, manifest] = await Promise.all([
+  const [html, script, manifest, theme] = await Promise.all([
     readFile("public/index.html", "utf8"),
     readFile("public/app.js", "utf8"),
     readFile("public/manifest.webmanifest", "utf8"),
+    readFile("public/rams.css", "utf8"),
   ]);
   assert.match(html, /id="geoMap"/);
   assert.match(script, /pointerdown/);
@@ -48,4 +49,7 @@ test("map, touch controls, and iOS app icon are wired", async () => {
   assert.equal(JSON.parse(manifest).display, "standalone");
   assert.match(html, /<title>Phinder<\/title>/);
   assert.equal(JSON.parse(manifest).short_name, "Phinder");
+  assert.equal(JSON.parse(manifest).theme_color, "#11110f");
+  assert.match(theme, /color-scheme:\s*dark/);
+  assert.match(theme, /--paper:\s*#11110f/);
 });

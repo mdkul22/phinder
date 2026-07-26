@@ -4,8 +4,8 @@
   "description": "Choose your favorite Immich photos privately.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f5f2eb",
-  "theme_color": "#f5f2eb",
+  "background_color": "#11110f",
+  "theme_color": "#11110f",
   "icons": [
     {
       "src": "/icon-192.png",
