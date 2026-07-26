@@ -351,6 +351,8 @@ async function api(req, res, url) {
   if (req.method === "POST" && url.pathname === "/api/cleanup/undo") {
     const last = db.prepare("SELECT asset_id,decision FROM cleanup_decisions ORDER BY decided_at DESC,rowid DESC LIMIT 1").get();
     if (!last) return json(res, 409, { error: "Nothing to undo" });
+    const assetResponse = await immich(`/assets/${last.asset_id}`);
+    const undoneAsset = await assetResponse.json();
     if (last.decision === "trashed") {
       await immich("/trash/restore/assets", {
         method: "POST",
@@ -358,7 +360,12 @@ async function api(req, res, url) {
       });
     }
     db.prepare("DELETE FROM cleanup_decisions WHERE asset_id=?").run(last.asset_id);
-    return json(res, 200, last);
+    const counts = db.prepare(`
+      SELECT COUNT(*) seen,
+      SUM(CASE WHEN decision='trashed' THEN 1 ELSE 0 END) trashed
+      FROM cleanup_decisions
+    `).get();
+    return json(res, 200, { ...last, asset: undoneAsset, seen: counts.seen || 0, trashed: counts.trashed || 0 });
   }
   if (req.method === "GET" && url.pathname === "/api/projects") {
     const rows = db.prepare(`
@@ -529,11 +536,13 @@ async function api(req, res, url) {
   if (req.method === "POST" && action === "undo") {
     const last = db.prepare("SELECT asset_id,decision FROM decisions WHERE project_id=? ORDER BY decided_at DESC,rowid DESC LIMIT 1").get(id);
     if (!last) return json(res, 409, { error: "Nothing to undo" });
+    const assetResponse = await immich(`/assets/${last.asset_id}`);
+    const undoneAsset = await assetResponse.json();
     if (last.decision === "accepted") {
       await immich(`/albums/${project.target_album_id}/assets`, { method: "DELETE", body: JSON.stringify({ ids: [last.asset_id] }) });
     }
     db.prepare("DELETE FROM decisions WHERE project_id=? AND asset_id=?").run(id, last.asset_id);
-    return json(res, 200, last);
+    return json(res, 200, { ...last, asset: undoneAsset });
   }
   if (req.method === "GET" && action === "selected") {
     const rows = db.prepare("SELECT asset_id,decided_at FROM decisions WHERE project_id=? AND decision='accepted' ORDER BY decided_at DESC").all(id);

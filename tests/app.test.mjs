@@ -31,6 +31,9 @@ test("cleanup is random, recoverable, and keeps the API key server-side", async 
   assert.match(server, /method: "DELETE"/);
   assert.match(server, /force: false/);
   assert.match(server, /\/trash\/restore\/assets/);
+  assert.match(server, /asset:\s*undoneAsset/);
+  assert.match(app, /renderChooserAsset\(undone\.asset\)/);
+  assert.match(app, /renderCleanupAsset\(undone\.asset\)/);
   assert.doesNotMatch(app, /IMMICH_API_KEY/);
 });
 

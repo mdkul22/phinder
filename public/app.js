@@ -260,30 +260,34 @@ async function next() {
   $("photo").style.opacity = ".3";
   try {
     const data = await call(`/api/projects/${project.id}/next?page=${page}`);
-    asset = data.asset;
     page = data.page;
-    if (!asset) {
-      $("photo").classList.add("hidden");
-      $("meta").classList.add("hidden");
-      $("empty").classList.remove("hidden");
-      $("acceptBtn").disabled = $("rejectBtn").disabled = true;
-      return;
-    }
-    $("empty").classList.add("hidden");
-    $("photo").classList.remove("hidden");
-    $("meta").classList.remove("hidden");
-    $("acceptBtn").disabled = $("rejectBtn").disabled = false;
-    $("photo").src = `/api/assets/${asset.id}/thumbnail`;
-    $("photo").alt = asset.originalFileName || "Photo to choose";
-    $("filename").textContent = asset.originalFileName || "";
-    $("date").textContent = asset.fileCreatedAt
-      ? new Date(asset.fileCreatedAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
-      : "";
-    $("photo").style.opacity = "1";
+    renderChooserAsset(data.asset);
   } catch (error) {
     alert(error.message);
   }
   await refreshCount();
+}
+
+function renderChooserAsset(nextAsset) {
+  asset = nextAsset;
+  if (!asset) {
+    $("photo").classList.add("hidden");
+    $("meta").classList.add("hidden");
+    $("empty").classList.remove("hidden");
+    $("acceptBtn").disabled = $("rejectBtn").disabled = true;
+    return;
+  }
+  $("empty").classList.add("hidden");
+  $("photo").classList.remove("hidden");
+  $("meta").classList.remove("hidden");
+  $("acceptBtn").disabled = $("rejectBtn").disabled = false;
+  $("photo").src = `/api/assets/${asset.id}/thumbnail`;
+  $("photo").alt = asset.originalFileName || "Photo to choose";
+  $("filename").textContent = asset.originalFileName || "";
+  $("date").textContent = asset.fileCreatedAt
+    ? new Date(asset.fileCreatedAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+    : "";
+  $("photo").style.opacity = "1";
 }
 
 async function decide(decision) {
@@ -303,8 +307,9 @@ async function decide(decision) {
 
 async function undo() {
   try {
-    await post(`/api/projects/${project.id}/undo`, {});
-    await next();
+    const undone = await post(`/api/projects/${project.id}/undo`, {});
+    renderChooserAsset(undone.asset);
+    await refreshCount();
   } catch (error) {
     alert(error.message);
   }
@@ -329,29 +334,33 @@ async function nextCleanup() {
   $("cleanupPhoto").style.opacity = ".3";
   try {
     const data = await call("/api/cleanup/next");
-    cleanupAsset = data.asset;
-    if (!cleanupAsset) {
-      $("cleanupPhoto").classList.add("hidden");
-      $("cleanupMeta").classList.add("hidden");
-      $("cleanupEmpty").classList.remove("hidden");
-      $("cleanupKeepBtn").disabled = $("cleanupTrashBtn").disabled = true;
-      return;
-    }
-    $("cleanupEmpty").classList.add("hidden");
-    $("cleanupPhoto").classList.remove("hidden");
-    $("cleanupMeta").classList.remove("hidden");
-    $("cleanupKeepBtn").disabled = $("cleanupTrashBtn").disabled = false;
-    $("cleanupPhoto").src = `/api/assets/${cleanupAsset.id}/thumbnail`;
-    $("cleanupPhoto").alt = cleanupAsset.originalFileName || "Random photo";
-    $("cleanupFilename").textContent = cleanupAsset.originalFileName || "";
-    $("cleanupDate").textContent = cleanupAsset.fileCreatedAt
-      ? new Date(cleanupAsset.fileCreatedAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
-      : "";
+    renderCleanupAsset(data.asset);
     $("cleanupProgress").textContent = `${data.seen || 0} reviewed · ${data.trashed || 0} moved to trash`;
-    $("cleanupPhoto").style.opacity = "1";
   } catch (error) {
     alert(error.message);
   }
+}
+
+function renderCleanupAsset(nextAsset) {
+  cleanupAsset = nextAsset;
+  if (!cleanupAsset) {
+    $("cleanupPhoto").classList.add("hidden");
+    $("cleanupMeta").classList.add("hidden");
+    $("cleanupEmpty").classList.remove("hidden");
+    $("cleanupKeepBtn").disabled = $("cleanupTrashBtn").disabled = true;
+    return;
+  }
+  $("cleanupEmpty").classList.add("hidden");
+  $("cleanupPhoto").classList.remove("hidden");
+  $("cleanupMeta").classList.remove("hidden");
+  $("cleanupKeepBtn").disabled = $("cleanupTrashBtn").disabled = false;
+  $("cleanupPhoto").src = `/api/assets/${cleanupAsset.id}/thumbnail`;
+  $("cleanupPhoto").alt = cleanupAsset.originalFileName || "Random photo";
+  $("cleanupFilename").textContent = cleanupAsset.originalFileName || "";
+  $("cleanupDate").textContent = cleanupAsset.fileCreatedAt
+    ? new Date(cleanupAsset.fileCreatedAt).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
+    : "";
+  $("cleanupPhoto").style.opacity = "1";
 }
 
 async function cleanupDecide(decision) {
@@ -371,8 +380,9 @@ async function cleanupDecide(decision) {
 
 async function cleanupUndo() {
   try {
-    await post("/api/cleanup/undo", {});
-    await nextCleanup();
+    const undone = await post("/api/cleanup/undo", {});
+    renderCleanupAsset(undone.asset);
+    $("cleanupProgress").textContent = `${undone.seen || 0} reviewed · ${undone.trashed || 0} moved to trash`;
   } catch (error) {
     alert(error.message);
   }
