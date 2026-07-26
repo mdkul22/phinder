@@ -1,0 +1,9 @@
+services:
+  phinder:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+    ports:
+      - "127.0.0.1:4173:4173"

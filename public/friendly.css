@@ -1,0 +1,235 @@
+:root {
+  --paper: #f5f2eb;
+  --card: #fffdf8;
+  --sage: #506a58;
+  --rust: #e16b54;
+  --line: #ddd6c8;
+}
+
+body {
+  background:
+    radial-gradient(circle at 12% 5%, rgba(225, 107, 84, .08), transparent 26rem),
+    var(--paper);
+}
+
+.topbar {
+  background: rgba(245, 242, 235, .92);
+}
+
+.mark {
+  background: var(--ink);
+  color: #fff;
+  border: 0;
+}
+
+.panel {
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 24px 70px rgba(61, 53, 44, .1);
+}
+
+select,
+input {
+  border-radius: 10px;
+}
+
+.primary,
+.navbtn,
+.resume button,
+.actions button {
+  border-radius: 12px;
+}
+
+.primary {
+  min-height: 54px;
+  align-items: center;
+  font-size: 15px;
+}
+
+.cleanupEntry,
+.danger {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid #bd4939;
+  border-radius: 12px;
+  background: transparent;
+  color: #a73d30;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.cleanupCopy {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+.cleanup {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px 60px;
+}
+
+.cleanupActions .trash,
+.danger {
+  background: #b54435;
+  color: white;
+  border-color: #b54435;
+}
+
+.cleanupExit {
+  display: block;
+  margin: 20px auto 0;
+}
+
+#cleanupDialog p {
+  max-width: 34rem;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.actions .undo {
+  border-radius: 50%;
+}
+
+.mapStep {
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.mapIntro {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 12px;
+}
+
+.mapIntro > div {
+  display: flex;
+  flex-direction: column;
+}
+
+.mapIntro b {
+  font: 19px Georgia, serif;
+}
+
+.mapIntro small {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.mapIntro > strong {
+  color: var(--sage);
+  font-size: 12px;
+  text-align: right;
+}
+
+.mapShell {
+  position: relative;
+  overflow: hidden;
+  background: #dfe8e3;
+  border: 1px solid #c8d3cc;
+  border-radius: 16px;
+}
+
+#geoMap {
+  display: block;
+  width: 100%;
+  aspect-ratio: 2 / 1;
+  min-height: 260px;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+#mapCountries .country {
+  fill: #f7f4ec;
+  stroke: #aebdb3;
+  stroke-width: .7;
+  vector-effect: non-scaling-stroke;
+}
+
+.mapRadius {
+  fill: rgba(225, 107, 84, .2);
+  stroke: #c9523f;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.mapPin {
+  fill: #c9523f;
+  stroke: #fff;
+  stroke-width: 3;
+  vector-effect: non-scaling-stroke;
+}
+
+.mapButtons {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+}
+
+.mapButtons button {
+  min-width: 38px;
+  min-height: 38px;
+  padding: 0 11px;
+  border: 1px solid rgba(42, 52, 45, .18);
+  border-radius: 10px;
+  background: rgba(255, 253, 248, .94);
+  color: var(--ink);
+  font: 700 15px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.radiusControl {
+  display: block;
+  margin-top: 12px;
+}
+
+.radiusControl span {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.radiusControl input {
+  width: 100%;
+  accent-color: var(--rust);
+}
+
+@media (max-width: 650px) {
+  .setup {
+    padding-left: 14px;
+    padding-right: 14px;
+  }
+
+  .mapIntro {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .mapIntro > strong {
+    text-align: left;
+  }
+
+  #geoMap {
+    min-height: 300px;
+    aspect-ratio: 1.25 / 1;
+  }
+
+  .mapButtons {
+    top: 8px;
+    right: 8px;
+  }
+
+  .mapButtons button {
+    min-width: 42px;
+    min-height: 42px;
+  }
+}
