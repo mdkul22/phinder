@@ -367,7 +367,7 @@ async function api(req, res, url) {
       }
     }
     const result = db.prepare("INSERT INTO projects(name,source_type,source_album_id,source_after,source_before,source_city,source_state,source_country,source_latitude,source_longitude,source_radius_km,shuffle,target_album_id,target_album_name) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
-      .run(body.name?.trim() || "Photo selection", body.sourceType, body.sourceAlbumId || null, body.sourceAfter || null, body.sourceBefore || null, body.sourceCity?.trim() || null, body.sourceState?.trim() || null, body.sourceCountry?.trim() || null, body.sourceLatitude ?? null, body.sourceLongitude ?? null, body.sourceRadiusKm ?? null, body.shuffle === false ? 0 : 1, body.targetAlbumId, body.targetAlbumName);
+      .run(body.name?.trim() || body.targetAlbumName, body.sourceType, body.sourceAlbumId || null, body.sourceAfter || null, body.sourceBefore || null, body.sourceCity?.trim() || null, body.sourceState?.trim() || null, body.sourceCountry?.trim() || null, body.sourceLatitude ?? null, body.sourceLongitude ?? null, body.sourceRadiusKm ?? null, body.shuffle === false ? 0 : 1, body.targetAlbumId, body.targetAlbumName);
     if (body.sourceType === "geography") {
       try {
         await populateGeographyCandidates(result.lastInsertRowid, Number(body.sourceLatitude), Number(body.sourceLongitude), Number(body.sourceRadiusKm));

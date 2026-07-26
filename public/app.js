@@ -196,6 +196,10 @@ async function init() {
       showNotice(error.message);
     }
   }
+  await loadProjects();
+}
+
+async function loadProjects() {
   const projects = await call("/api/projects");
   $("resume").innerHTML = projects.map((savedProject) =>
     `<button data-id="${savedProject.id}"><b>Continue ${escapeHtml(savedProject.name)}</b><br>` +
@@ -215,6 +219,7 @@ async function openChooser() {
   $("setup").classList.add("hidden");
   $("review").classList.add("hidden");
   $("triage").classList.remove("hidden");
+  $("homeBtn").hidden = false;
   $("reviewBtn").hidden = false;
   $("projectTitle").textContent = project.name;
   await next();
@@ -282,6 +287,7 @@ async function refreshCount() {
 async function reviewPicks() {
   $("triage").classList.add("hidden");
   $("review").classList.remove("hidden");
+  $("homeBtn").hidden = false;
   const selected = await call(`/api/projects/${project.id}/selected`);
   $("grid").innerHTML = selected.length
     ? selected.map((item) => `<img loading="lazy" src="/api/assets/${item.asset_id}/thumbnail" alt="Chosen photo">`).join("")
@@ -346,8 +352,22 @@ function openCleanup() {
   $("triage").classList.add("hidden");
   $("review").classList.add("hidden");
   $("cleanup").classList.remove("hidden");
+  $("homeBtn").hidden = false;
   $("reviewBtn").hidden = true;
   nextCleanup();
+}
+
+async function goHome() {
+  asset = null;
+  cleanupAsset = null;
+  $("triage").classList.add("hidden");
+  $("review").classList.add("hidden");
+  $("cleanup").classList.add("hidden");
+  $("setup").classList.remove("hidden");
+  $("homeBtn").hidden = true;
+  $("reviewBtn").hidden = true;
+  page = 1;
+  await loadProjects();
 }
 
 $("sourceType").onchange = async (event) => {
@@ -392,7 +412,6 @@ $("beginBtn").onclick = async () => {
     button.disabled = true;
     button.firstChild.textContent = sourceType === "geography" ? "Finding photos in this area " : "Opening your photos ";
     project = await post("/api/projects", {
-      name: $("projectName").value,
       sourceType,
       sourceAlbumId: $("sourceAlbum").value,
       ...window,
@@ -426,10 +445,8 @@ $("startCleanupBtn").onclick = (event) => {
 $("cleanupKeepBtn").onclick = () => cleanupDecide("kept");
 $("cleanupTrashBtn").onclick = () => cleanupDecide("trashed");
 $("cleanupUndoBtn").onclick = cleanupUndo;
-$("cleanupExitBtn").onclick = () => {
-  $("cleanup").classList.add("hidden");
-  $("setup").classList.remove("hidden");
-};
+$("cleanupExitBtn").onclick = goHome;
+$("homeBtn").onclick = goHome;
 
 document.addEventListener("keydown", (event) => {
   if (!$("triage").classList.contains("hidden") && !event.repeat) {

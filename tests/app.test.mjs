@@ -12,6 +12,8 @@ test("MVP controls and safety copy are present", async () => {
   for (const text of ["Start choosing", "Uploaded today", "Pune wedding", "Choose capture dates", "Choose a place on the map", "Surprise me", "Skip", "Add to album", "Your picks", "Nothing is deleted, moved, or copied"]) assert.match(html, new RegExp(text, "i"));
   assert.doesNotMatch(html, />[^<]*triage[^<]*</i);
   assert.doesNotMatch(html, /Check metadata|metadataSummary|auditNote/);
+  assert.match(html, /id="homeBtn"/);
+  assert.doesNotMatch(html, /Name this selection/i);
 });
 
 test("cleanup is random, recoverable, and keeps the API key server-side", async () => {

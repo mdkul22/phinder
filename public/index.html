@@ -22,6 +22,7 @@
   <header class="topbar">
     <a class="brand" href="#"><span class="mark">PH</span><span>PHINDER</span></a>
     <div class="status" id="status"><i></i><span>Getting ready...</span></div>
+    <button class="navbtn" id="homeBtn" hidden>Home</button>
     <button class="navbtn" id="reviewBtn" hidden>Your picks <b id="selectedCount">0</b></button>
   </header>
   <main>
@@ -60,7 +61,6 @@
         </div>
         <div class="step"><span></span><label><b>Photo order</b><select id="sourceOrder"><option value="shuffle">Surprise me</option><option value="recent">Newest first</option></select></label></div>
         <div class="step"><span>03</span><label><b>Save your picks to</b><select id="targetAlbum"><option>Loading albums...</option></select></label><button class="textbtn" id="newAlbumBtn">+ New album</button></div>
-        <div class="step"><span>04</span><label><b>Name this selection</b><input id="projectName" value="Wedding favorites" maxlength="80"></label></div>
         <button class="primary" id="beginBtn">Start choosing <span>&rarr;</span></button>
         <button class="cleanupEntry" id="cleanupBtn">Clean up random photos</button>
         <p class="cleanupCopy">Review your whole library in a random order and move unwanted photos to Immich trash.</p>
