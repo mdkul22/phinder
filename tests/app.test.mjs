@@ -52,4 +52,5 @@ test("map, touch controls, and iOS app icon are wired", async () => {
   assert.equal(JSON.parse(manifest).theme_color, "#11110f");
   assert.match(theme, /color-scheme:\s*dark/);
   assert.match(theme, /--paper:\s*#11110f/);
+  assert.match(theme, /select\s*\{\s*border-radius:\s*0/);
 });

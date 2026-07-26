@@ -84,7 +84,7 @@ a:focus-visible {
 .navbtn {
   margin-left: 8px;
   border-color: var(--line);
-  border-radius: 1px;
+  border-radius: 7px;
   background: transparent;
   font-size: 12px;
   font-weight: 500;
@@ -148,7 +148,7 @@ dialog h3 {
   overflow: visible;
   padding: 8px 28px 28px;
   border-color: var(--line);
-  border-radius: 1px;
+  border-radius: 8px;
   background: var(--card);
   box-shadow: none;
 }
@@ -176,9 +176,16 @@ label b {
 select,
 input {
   border-color: #464640;
-  border-radius: 1px;
   background: #10100f;
   color: var(--ink);
+}
+
+select {
+  border-radius: 0;
+}
+
+input {
+  border-radius: 6px;
 }
 
 select:hover,
@@ -188,7 +195,7 @@ input:hover {
 
 .filterToggle {
   border-color: var(--line);
-  border-radius: 1px;
+  border-radius: 7px;
   background: transparent;
 }
 
@@ -207,7 +214,7 @@ input:hover {
 .danger,
 .resume button,
 .actions button {
-  border-radius: 1px;
+  border-radius: 7px;
 }
 
 .primary {
@@ -277,7 +284,7 @@ input:hover {
 
 .mapShell {
   border-color: var(--line);
-  border-radius: 1px;
+  border-radius: 8px;
   background: #171b1a;
 }
 
@@ -298,7 +305,7 @@ input:hover {
 
 .mapButtons button {
   border-color: #4a4a45;
-  border-radius: 1px;
+  border-radius: 5px;
   background: rgba(17, 17, 15, .94);
   color: var(--ink);
 }
@@ -309,7 +316,7 @@ input:hover {
 
 dialog {
   border-color: var(--line);
-  border-radius: 1px;
+  border-radius: 8px;
   background: var(--card);
   color: var(--ink);
 }
