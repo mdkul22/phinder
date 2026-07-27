@@ -38,8 +38,8 @@ a:focus-visible {
 }
 
 .topbar {
-  height: 64px;
-  padding: 0 max(20px, 4vw);
+  height: calc(64px + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) max(20px, 4vw) 0;
   background: rgba(17, 17, 15, .94);
   border-color: var(--line);
   backdrop-filter: blur(16px);
@@ -357,7 +357,8 @@ dialog::backdrop {
 
 @media (max-width: 650px) {
   .topbar {
-    height: 58px;
+    height: calc(58px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
   }
 
   .setup {
